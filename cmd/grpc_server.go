@@ -49,6 +49,6 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.Flags().StringVar(&addrGRPC, "addr", "localhost:8088", "host:port to listen")
+	RootCmd.Flags().StringVar(&addrGRPC, "addr", "events-api:8088", "host:port to listen")
 	RootCmd.Flags().StringVar(&addr, "config", "./config", "")
 }
