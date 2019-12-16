@@ -2,6 +2,7 @@ package maindb
 
 import (
 	"context"
+	"time"
 
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -17,11 +18,21 @@ type PgEventStorage struct {
 func NewPgEventStorage(dsn string) (*PgEventStorage, error) {
 	db, err := sqlx.Open("pgx", dsn)
 	if err != nil {
-		return nil, err
+		timer1 := time.NewTimer(10 * time.Second)
+		<-timer1.C
+		db, err = sqlx.Open("pgx", dsn)
+		if err != nil {
+			return nil, err
+		}
 	}
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		timer1 := time.NewTimer(10 * time.Second)
+		<-timer1.C
+		db, err = sqlx.Open("pgx", dsn)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &PgEventStorage{db: db}, nil
 }
