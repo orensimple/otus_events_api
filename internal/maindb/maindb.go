@@ -39,7 +39,7 @@ func NewPgEventStorage(dsn string) (*PgEventStorage, error) {
 
 func (pges *PgEventStorage) SaveEvent(ctx context.Context, event *models.Event) error {
 	query := `
-		INSERT INTO events(id, owner, title, text, start_time, end_time)
+		INSERT INTO public.events(id, owner, title, text, start_time, end_time)
 		VALUES (:id, :owner, :title, :text, :start_time, :end_time)
 	`
 	_, err := pges.db.NamedExecContext(ctx, query, map[string]interface{}{
@@ -56,7 +56,7 @@ func (pges *PgEventStorage) SaveEvent(ctx context.Context, event *models.Event) 
 // UpdateEvent to maindb
 func (pges *PgEventStorage) UpdateEvent(ctx context.Context, event *models.Event) (*models.Event, error) {
 	query := `
-		UPDATE events
+		UPDATE public.events
 		SET owner = :owner, title = :title, text = :text, start_time = :start_time, end_time =:end_time
 		WHERE id = :id
 	`
@@ -80,7 +80,7 @@ func (pges *PgEventStorage) GetEvents(ctx context.Context) ([]*models.Event, err
 // GetEventsByDay from maindb
 func (pges *PgEventStorage) GetEventsByDay(ctx context.Context) ([]*models.Event, error) {
 	query := `
-	SELECT id, owner, title, text, start_time, end_time FROM events
+	SELECT id, owner, title, text, start_time, end_time FROM public.events
 	WHERE start_time BETWEEN
 	date_trunc('day', now())
 	AND date_trunc('day', now()) +('1 day')::interval -('1 second')::interval
@@ -108,7 +108,7 @@ func (pges *PgEventStorage) GetEventsByDay(ctx context.Context) ([]*models.Event
 // GetEventsByWeek from maindb
 func (pges *PgEventStorage) GetEventsByWeek(ctx context.Context) ([]*models.Event, error) {
 	query := `
-	SELECT id, owner, title, text, start_time, end_time FROM events
+	SELECT id, owner, title, text, start_time, end_time FROM public.events
 	WHERE start_time BETWEEN
 	date_trunc('week', now())
 	AND date_trunc('week', now()) +('1 week')::interval -('1 day')::interval
@@ -136,7 +136,7 @@ func (pges *PgEventStorage) GetEventsByWeek(ctx context.Context) ([]*models.Even
 // GetEventsByMonth from maindb
 func (pges *PgEventStorage) GetEventsByMonth(ctx context.Context) ([]*models.Event, error) {
 	query := `
-	SELECT id, owner, title, text, start_time, end_time FROM events
+	SELECT id, owner, title, text, start_time, end_time FROM public.events
 	WHERE start_time BETWEEN
 	date_trunc('month', now())
 	AND date_trunc('month', now()) +('1 month')::interval -('1 day')::interval
@@ -164,7 +164,7 @@ func (pges *PgEventStorage) GetEventsByMonth(ctx context.Context) ([]*models.Eve
 // DeleteEvent from maindb
 func (pges *PgEventStorage) DeleteEvent(ctx context.Context, ID int64) error {
 	query := `
-		DELETE FROM events
+		DELETE FROM public.events
 		WHERE id = :id
 	`
 	_, err := pges.db.NamedExecContext(ctx, query, map[string]interface{}{
