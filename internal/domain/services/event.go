@@ -86,7 +86,6 @@ func (es *EventService) GetEventsByTime(ctx context.Context, timeType string) ([
 		}
 		return events, nil
 	}
-	return nil, nil
 }
 
 //DeleteEvent func

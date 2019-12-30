@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/orensimple/otus_events_api/internal/domain/errors"
-	"github.com/orensimple/otus_events_api/internal/domain/services"
 	"github.com/orensimple/otus_events_api/internal/memory"
 	"github.com/stretchr/testify/assert"
 )

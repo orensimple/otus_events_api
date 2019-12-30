@@ -2,21 +2,26 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/orensimple/otus_events_api/config"
 	"github.com/orensimple/otus_events_api/internal/domain/services"
 	"github.com/orensimple/otus_events_api/internal/grpc/api"
 	"github.com/orensimple/otus_events_api/internal/logger"
 	"github.com/orensimple/otus_events_api/internal/maindb"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var addrGRPC, dsn, addr string
+var addrGRPC, addr string
 
 // TODO: dependency injection, orchestrator
 func construct() (*api.CalendarServer, error) {
-	config.Init(addr)
+	err := config.Init(addr)
+	if err != nil {
+		logger.ContextLogger.Errorf("Eror init config, viper.ReadInConfig", err.Error())
+	}
 	logger.InitLogger()
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/events", viper.GetString("postgres.user"), viper.GetString("postgres.passwd"), viper.GetString("postgres.ip"), viper.GetString("postgres.port"))
 	eventStorage, err := maindb.NewPgEventStorage(dsn)
@@ -41,9 +46,17 @@ var RootCmd = &cobra.Command{
 			logger.ContextLogger.Errorf(" Cannot init logger, config, storage", err)
 		}
 		logger.ContextLogger.Infof(" [*] GRPC server run. To exit press CTRL+C")
+
 		err = server.Serve(addrGRPC)
 		if err != nil {
 			logger.ContextLogger.Errorf(" Cannot start GRPC server", err)
+		}
+
+		http.Handle("/metrics", promhttp.Handler())
+		logger.ContextLogger.Infof("Starting web server at %s\n", "events-api:9110")
+		err = http.ListenAndServe("events-api:9120", nil)
+		if err != nil {
+			logger.ContextLogger.Errorf("http.ListenAndServer for metrics: %v\n", err.Error())
 		}
 	},
 }

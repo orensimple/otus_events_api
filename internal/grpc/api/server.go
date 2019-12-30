@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
-	"github.com/golang/protobuf/ptypes"
-	"google.golang.org/grpc"
 	"net"
 	"time"
 
+	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/grpc"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/orensimple/otus_events_api/internal/domain/errors"
 	"github.com/orensimple/otus_events_api/internal/domain/services"
 )
@@ -182,11 +184,26 @@ func (cs *CalendarServer) GetEventsByTime(ctx context.Context, req *GetEventsByT
 }
 
 func (cs *CalendarServer) Serve(addr string) error {
-	s := grpc.NewServer()
+	// Create some standard server metrics.
+	grpcMetrics := grpc_prometheus.NewServerMetrics()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+	)
+	grpc_prometheus.Register(grpcServer)
+
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+	)
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 	RegisterCalendarServiceServer(s, cs)
+
+	// Initialize all metrics.
+	grpcMetrics.InitializeMetrics(grpcServer)
+
 	return s.Serve(l)
 }
