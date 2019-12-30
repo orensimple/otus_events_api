@@ -46,11 +46,12 @@ var RootCmd = &cobra.Command{
 			logger.ContextLogger.Errorf(" Cannot init logger, config, storage", err)
 		}
 		logger.ContextLogger.Infof(" [*] GRPC server run. To exit press CTRL+C")
-
-		err = server.Serve(addrGRPC)
-		if err != nil {
-			logger.ContextLogger.Errorf(" Cannot start GRPC server", err)
-		}
+		go func() {
+			err = server.Serve(addrGRPC)
+			if err != nil {
+				logger.ContextLogger.Errorf(" Cannot start GRPC server", err)
+			}
+		}()
 
 		http.Handle("/metrics", promhttp.Handler())
 		logger.ContextLogger.Infof("Starting web server at %s\n", "events-api:9110")
