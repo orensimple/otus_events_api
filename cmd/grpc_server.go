@@ -55,12 +55,10 @@ var RootCmd = &cobra.Command{
 
 		http.Handle("/metrics", promhttp.Handler())
 		logger.ContextLogger.Infof("Starting web server at %s\n", "events-api:9110")
-		go func() {
-			err = http.ListenAndServe("events-api:9110", nil)
-			if err != nil {
-				logger.ContextLogger.Errorf("http.ListenAndServer for metrics: %v", err.Error())
-			}
-		}()
+		err = http.ListenAndServe("events-api:9110", nil)
+		if err != nil {
+			logger.ContextLogger.Errorf("http.ListenAndServer for metrics: %v\n", err.Error())
+		}
 	},
 }
 
